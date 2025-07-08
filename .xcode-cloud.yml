@@ -3,7 +3,7 @@ version: 1
 workflows:
   app-store-release:
     name: App Store Release Build
-    description: Build and upload to App Store Connect with iOS 18 SDK
+    description: Build and upload to App Store Connect with latest iOS SDK
     
     trigger:
       push:
@@ -29,15 +29,12 @@ workflows:
         groups:
           - App Store Connect Users
 
-  development-build:
-    name: Development Build
-    description: Build for testing
+  manual-release:
+    name: Manual Release Build
+    description: Manually triggered build for App Store
     
     trigger:
-      pull_request:
-        target_branches:
-          - main
-          - master
+      manual: true
     
     environment:
       xcode: latest
@@ -45,5 +42,14 @@ workflows:
     
     build:
       scheme: ProgressBuild
-      configuration: Debug
-      destination: platform=iOS Simulator,name=iPhone 15
+      configuration: Release
+      destination: generic/platform=iOS
+      
+    archive:
+      scheme: ProgressBuild
+      configuration: Release
+      
+    distribute:
+      - destination: app-store-connect
+        groups:
+          - App Store Connect Users
