@@ -31,5 +31,16 @@ target 'ProgressBuild' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+    
+    # 确保所有pods在Release模式下生成dSYM文件
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        if config.name == 'Release'
+          config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+          config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
+          config.build_settings['STRIP_INSTALLED_PRODUCT'] = 'NO'
+        end
+      end
+    end
   end
 end
