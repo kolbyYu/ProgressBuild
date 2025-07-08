@@ -73,3 +73,15 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+# 忽略备份文件和敏感配置
+android/app/build.gradle.backup
+android/app/build.gradle.bak
+android/gradle.properties.release
+*.keystore
+*.jks
+
+# iOS构建文件
+ios/build/
+ios/ProgressBuild.xcworkspace/xcuserdata/
+ios/ProgressBuild.xcodeproj/xcuserdata/
+*.mobileprovision
