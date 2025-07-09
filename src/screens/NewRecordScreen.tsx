@@ -672,10 +672,16 @@ const NewRecordScreen = () => {
                 <Picker
                   selectedValue={tempStartHour}
                   style={styles.picker}
+                  itemStyle={styles.pickerItem}
                   onValueChange={(itemValue) => setTempStartHour(itemValue)}
                 >
                   {hours.map((hour) => (
-                    <Picker.Item key={hour} label={hour.toString().padStart(2, '0')} value={hour} />
+                    <Picker.Item 
+                      key={hour} 
+                      label={hour.toString().padStart(2, '0')} 
+                      value={hour} 
+                      color="#333"
+                    />
                   ))}
                 </Picker>
               </View>
@@ -684,10 +690,16 @@ const NewRecordScreen = () => {
                 <Picker
                   selectedValue={tempStartMinute}
                   style={styles.picker}
+                  itemStyle={styles.pickerItem}
                   onValueChange={(itemValue) => setTempStartMinute(itemValue)}
                 >
                   {minutes.map((minute) => (
-                    <Picker.Item key={minute} label={minute.toString().padStart(2, '0')} value={minute} />
+                    <Picker.Item 
+                      key={minute} 
+                      label={minute.toString().padStart(2, '0')} 
+                      value={minute} 
+                      color="#333"
+                    />
                   ))}
                 </Picker>
               </View>
@@ -728,10 +740,16 @@ const NewRecordScreen = () => {
                 <Picker
                   selectedValue={tempEndHour}
                   style={styles.picker}
+                  itemStyle={styles.pickerItem}
                   onValueChange={(itemValue) => setTempEndHour(itemValue)}
                 >
                   {hours.map((hour) => (
-                    <Picker.Item key={hour} label={hour.toString().padStart(2, '0')} value={hour} />
+                    <Picker.Item 
+                      key={hour} 
+                      label={hour.toString().padStart(2, '0')} 
+                      value={hour} 
+                      color="#333"
+                    />
                   ))}
                 </Picker>
               </View>
@@ -740,10 +758,16 @@ const NewRecordScreen = () => {
                 <Picker
                   selectedValue={tempEndMinute}
                   style={styles.picker}
+                  itemStyle={styles.pickerItem}
                   onValueChange={(itemValue) => setTempEndMinute(itemValue)}
                 >
                   {minutes.map((minute) => (
-                    <Picker.Item key={minute} label={minute.toString().padStart(2, '0')} value={minute} />
+                    <Picker.Item 
+                      key={minute} 
+                      label={minute.toString().padStart(2, '0')} 
+                      value={minute} 
+                      color="#333"
+                    />
                   ))}
                 </Picker>
               </View>
@@ -1030,6 +1054,11 @@ const styles = StyleSheet.create({
   picker: {
     width: '100%',
     height: 150,
+  },
+  pickerItem: {
+    fontSize: 18,
+    color: '#333',
+    textAlign: 'center',
   },
   searchHintText: {
     fontSize: 14,

@@ -224,7 +224,13 @@ class ApiService {
           const retryData = await retryResponse.json();
           
           if (!retryResponse.ok) {
-            throw new Error(retryData.message || 'Request failed after token refresh');
+            // For HTTP error codes, return the error data instead of throwing
+            return {
+              success: false,
+              message: retryData.message || 'Request failed after token refresh',
+              error: retryData.error,
+              data: retryData.data || null,
+            };
           }
           
           return retryData;
@@ -236,7 +242,14 @@ class ApiService {
       }
 
       if (!response.ok) {
-        throw new Error(data.message || 'Request failed');
+        // For HTTP error codes, return the error data instead of throwing
+        // This allows the caller to handle specific error messages
+        return {
+          success: false,
+          message: data.message || 'Request failed',
+          error: data.error,
+          data: data.data || null,
+        };
       }
 
       return data;

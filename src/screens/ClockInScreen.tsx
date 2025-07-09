@@ -130,23 +130,42 @@ const ClockInScreen = () => {
         Alert.alert('Success', type === 0 ? 'Clock In successful' : 'Clock Out successful');
         fetchRecords();
       } else {
-        Alert.alert('Error', res.message || 'Failed to clock in/out');
+        // Show specific error message from API response
+        const errorMessage = res.message || res.error || 'Failed to clock in/out';
+        Alert.alert('Error', errorMessage);
+        console.log('🚨 Clock attendance failed:', {
+          success: res.success,
+          message: res.message,
+          error: res.error,
+          data: res.data
+        });
       }
     } catch (error) {
       console.error('Clock error:', error);
       
-      let errorMessage = 'Failed to get location. Please ensure location services are enabled and try again.';
+      let errorTitle = 'Error';
+      let errorMessage = 'An unexpected error occurred. Please try again.';
       
-      // Provide helpful message for simulator/emulator users
-      if (__DEV__) {
-        if (Platform.OS === 'ios') {
-          errorMessage = 'Failed to get location. If using iOS Simulator, please set a custom location in Xcode (Debug → Simulate Location → Custom Location) or use a physical device for testing.';
-        } else if (Platform.OS === 'android') {
-          errorMessage = 'Failed to get location. If using Android Emulator, please set location in emulator settings (⋮ → Location) or use a physical device for testing.';
+      // Check if this is a location error
+      if (error instanceof Error && error.message.includes('location')) {
+        errorTitle = 'Location Error';
+        errorMessage = 'Failed to get location. Please ensure location services are enabled and try again.';
+        
+        // Provide helpful message for simulator/emulator users
+        if (__DEV__) {
+          if (Platform.OS === 'ios') {
+            errorMessage = 'Failed to get location. If using iOS Simulator, please set a custom location in Xcode (Debug → Simulate Location → Custom Location) or use a physical device for testing.';
+          } else if (Platform.OS === 'android') {
+            errorMessage = 'Failed to get location. If using Android Emulator, please set location in emulator settings (⋮ → Location) or use a physical device for testing.';
+          }
         }
+      } else {
+        // This is likely an API error or network error
+        errorTitle = 'Network Error';
+        errorMessage = error instanceof Error ? error.message : 'Failed to connect to server. Please check your internet connection and try again.';
       }
       
-      Alert.alert('Location Error', errorMessage);
+      Alert.alert(errorTitle, errorMessage);
     } finally {
       setLoading(false);
     }
