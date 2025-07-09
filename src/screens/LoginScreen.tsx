@@ -60,6 +60,7 @@ const LoginScreen = () => {
           <TextInput
             style={styles.input}
             placeholder="Username"
+            placeholderTextColor="#999"
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
@@ -70,6 +71,7 @@ const LoginScreen = () => {
           <TextInput
             style={styles.input}
             placeholder="Password"
+            placeholderTextColor="#999"
             value={password}
             onChangeText={setPassword}
             secureTextEntry

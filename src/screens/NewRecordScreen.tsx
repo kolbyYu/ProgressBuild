@@ -385,9 +385,12 @@ const NewRecordScreen = () => {
               <View style={styles.searchInputContainer}>
                 <TextInput
                   style={styles.searchInput}
-                  placeholder="Search projects by description..."
+                  placeholder="Search projects..."
+                  placeholderTextColor="#999"
                   value={searchKeyword}
                   onChangeText={setSearchKeyword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
                 {searchLoading && (
                   <ActivityIndicator 
@@ -489,6 +492,7 @@ const NewRecordScreen = () => {
           <TextInput
             style={styles.textArea}
             placeholder="Enter work description..."
+            placeholderTextColor="#999"
             value={description}
             onChangeText={setDescription}
             multiline

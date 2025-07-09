@@ -107,7 +107,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({
     Animated.parallel([
       Animated.timing(logoOpacity, {
         toValue: 1,
-        duration: 800,
+        duration: 400,
         useNativeDriver: true,
       }),
       Animated.spring(logoScale, {
@@ -123,34 +123,34 @@ const SplashScreen: React.FC<SplashScreenProps> = ({
       Animated.parallel([
         Animated.timing(titleOpacity, {
           toValue: 1,
-          duration: 600,
+          duration: 300,
           useNativeDriver: true,
         }),
         Animated.timing(titleTranslateY, {
           toValue: 0,
-          duration: 600,
+          duration: 300,
           useNativeDriver: true,
         }),
       ]).start();
-    }, 400);
+    }, 200);
 
     // Subtitle animation (delayed)
     setTimeout(() => {
       Animated.timing(subtitleOpacity, {
         toValue: 1,
-        duration: 600,
+        duration: 300,
         useNativeDriver: true,
       }).start();
-    }, 800);
+    }, 400);
 
     // Loading animation (delayed)
     setTimeout(() => {
       Animated.timing(loadingOpacity, {
         toValue: 1,
-        duration: 400,
+        duration: 200,
         useNativeDriver: true,
       }).start();
-    }, 1200);
+    }, 600);
   };
 
   return (

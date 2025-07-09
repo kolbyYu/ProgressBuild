@@ -91,17 +91,6 @@ const MainTabNavigator = () => {
 // Main navigator
 const AppNavigator = () => {
   const { isAuthenticated, isLoading } = useAuth();
-  const [showSplash, setShowSplash] = useState(true);
-
-  // Handle splash screen completion
-  const handleSplashFinish = () => {
-    setShowSplash(false);
-  };
-
-  // Show splash screen first, but only if not loading auth state
-  if (showSplash && !isLoading) {
-    return <SplashScreen onFinish={handleSplashFinish} duration={3000} />;
-  }
 
   // Show loading screen while checking authentication
   if (isLoading) {
