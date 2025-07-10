@@ -10,10 +10,13 @@ import {
   Image,
   ScrollView,
   Dimensions,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { launchImageLibrary, launchCamera, CameraOptions, ImageLibraryOptions } from 'react-native-image-picker';
 import { apiService } from '../services/api';
 import { JobRecordPhoto } from '../types';
 
@@ -139,22 +142,165 @@ const JobRecordDetailScreen = () => {
     return `${hours.toFixed(1)} hours`;
   };
 
+  const handleAddPhoto = (recordId: number) => {
+    Alert.alert(
+      'Add Photo',
+      'Choose an option',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Take Photo', onPress: () => handleTakePhoto(recordId) },
+        { text: 'Choose from Library', onPress: () => handleChooseFromLibrary(recordId) },
+      ]
+    );
+  };
+
+  const handleTakePhoto = async (recordId: number) => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Camera Permission',
+            message: 'This app needs access to camera to take photos',
+            buttonPositive: 'OK',
+            buttonNegative: 'Cancel',
+          },
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Permission Denied', 'Camera permission is required to take photos');
+          return;
+        }
+      } catch (err) {
+        console.warn(err);
+        return;
+      }
+    }
+
+    const options: CameraOptions = {
+      mediaType: 'photo',
+      quality: 0.8 as const,
+      maxWidth: 1200,
+      maxHeight: 1200,
+      saveToPhotos: true,
+    };
+
+    try {
+      const result = await launchCamera(options);
+      if (result.assets && result.assets[0]?.uri) {
+        await uploadPhoto(recordId, result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      Alert.alert('Error', 'Failed to take photo');
+    }
+  };
+
+  const handleChooseFromLibrary = async (recordId: number) => {
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+      quality: 0.8 as const,
+      maxWidth: 1200,
+      maxHeight: 1200,
+      selectionLimit: 1,
+    };
+
+    try {
+      const result = await launchImageLibrary(options);
+      if (result.assets && result.assets[0]?.uri) {
+        await uploadPhoto(recordId, result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error choosing photo:', error);
+      Alert.alert('Error', 'Failed to choose photo');
+    }
+  };
+
+  const uploadPhoto = async (recordId: number, photoUri: string) => {
+    try {
+      setLoading(true);
+      const response = await apiService.uploadJobRecordPhoto(recordId, photoUri);
+      if (response.success) {
+        // Refresh the record list to show the new photo
+        await fetchJobRecords(currentPage, true);
+        Alert.alert('Success', 'Photo uploaded successfully');
+      } else {
+        Alert.alert('Error', 'Failed to upload photo');
+      }
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      Alert.alert('Error', 'Failed to upload photo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeletePhoto = async (recordId: number, photoId: number) => {
+    Alert.alert(
+      'Delete Photo',
+      'Are you sure you want to delete this photo?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setLoading(true);
+              const response = await apiService.deleteJobRecordPhoto(recordId, photoId);
+              if (response.success) {
+                // Refresh the record list to update photos
+                await fetchJobRecords(currentPage, true);
+                Alert.alert('Success', 'Photo deleted successfully');
+              } else {
+                Alert.alert('Error', 'Failed to delete photo');
+              }
+            } catch (error) {
+              console.error('Error deleting photo:', error);
+              Alert.alert('Error', 'Failed to delete photo');
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderPhotoItem = ({ item }: { item: JobRecordPhoto }) => (
-    <TouchableOpacity style={styles.photoContainer}>
-      <Image
-        source={{ uri: item.url }}
-        style={styles.photo}
-        resizeMode="cover"
-      />
-    </TouchableOpacity>
+    <View style={styles.photoContainer}>
+      <TouchableOpacity
+        onPress={() => {
+          // TODO: Add photo preview functionality
+        }}
+      >
+        <Image
+          source={{ uri: item.url }}
+          style={styles.photo}
+          resizeMode="cover"
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.deletePhotoButton}
+        onPress={() => handleDeletePhoto(item.jobRecordId, item.id)}
+      >
+        <Ionicons name="trash-outline" size={20} color="#FF0000" />
+      </TouchableOpacity>
+    </View>
   );
 
-  const renderPhotosSection = (photos: JobRecordPhoto[]) => {
-    if (!photos || photos.length === 0) return null;
-
+  const renderPhotosSection = (photos: JobRecordPhoto[], recordId: number) => {
     return (
       <View style={styles.photosSection}>
-        <Text style={styles.photosLabel}>Photos ({photos.length}):</Text>
+        <View style={styles.photosSectionHeader}>
+          <Text style={styles.photosLabel}>Photos ({photos?.length || 0})</Text>
+          <TouchableOpacity
+            style={styles.addPhotoButton}
+            onPress={() => handleAddPhoto(recordId)}
+          >
+            <Ionicons name="camera-outline" size={24} color="#007AFF" />
+            <Text style={styles.addPhotoText}>Add Photo</Text>
+          </TouchableOpacity>
+        </View>
         <FlatList
           data={photos}
           renderItem={renderPhotoItem}
@@ -198,7 +344,7 @@ const JobRecordDetailScreen = () => {
           </View>
         )}
 
-        {renderPhotosSection(item.photos)}
+        {renderPhotosSection(item.photos, item.id)}
       </View>
       
       <View style={styles.recordFooter}>
@@ -473,29 +619,51 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   photosSection: {
+    marginTop: 15,
+    paddingTop: 15,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    paddingTop: 12,
-    marginTop: 12,
+    borderTopColor: '#eee',
+  },
+  photosSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   photosLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
   },
   photosList: {
-    paddingRight: 16,
+    paddingVertical: 10,
+  },
+  addPhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  addPhotoText: {
+    marginLeft: 4,
+    color: '#007AFF',
+    fontSize: 16,
   },
   photoContainer: {
-    marginRight: 8,
-    borderRadius: 8,
-    overflow: 'hidden',
-    backgroundColor: '#f0f0f0',
+    marginRight: 10,
+    position: 'relative',
   },
   photo: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+  },
+  deletePhotoButton: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 12,
+    padding: 4,
   },
 });
 

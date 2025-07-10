@@ -895,6 +895,44 @@ class ApiService {
       throw error;
     }
   }
+
+  async uploadJobRecordPhoto(recordId: number, imageUri: string): Promise<ApiResponse<{ url: string }>> {
+    try {
+      const formData = new FormData();
+      formData.append('file', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: 'photo.jpg',
+      } as any);
+
+      const response = await fetch(`${this.baseUrl}/jobRecords/${recordId}/photos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${this.token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error uploading job record photo:', error);
+      return {
+        success: false,
+        message: 'Failed to upload photo',
+      };
+    }
+  }
+
+  async deleteJobRecordPhoto(recordId: number, photoId: number): Promise<ApiResponse<void>> {
+    return this.request<void>(
+      `/jobRecords/${recordId}/photos/${photoId}`,
+      {
+        method: 'DELETE',
+      }
+    );
+  }
 }
 
 export const apiService = new ApiService();

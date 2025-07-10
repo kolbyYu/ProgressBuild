@@ -11,13 +11,15 @@ import {
   Modal,
   FlatList,
   Image,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchImageLibrary, launchCamera, CameraOptions, ImageLibraryOptions } from 'react-native-image-picker';
 import { apiService } from '../services/api';
 import { Estimate, JobCategoryResponse, JobItemResponse } from '../types';
 
@@ -196,22 +198,76 @@ const NewRecordScreen = () => {
   };
 
   const handleAddPhoto = () => {
-    launchImageLibrary(
-      {
-        mediaType: 'photo',
-        quality: 0.8,
-        maxWidth: 1024,
-        maxHeight: 1024,
-      },
-      (response) => {
-        if (response.assets && response.assets[0]) {
-          const uri = response.assets[0].uri;
-          if (uri) {
-            setPhotos([...photos, uri]);
-          }
-        }
-      }
+    Alert.alert(
+      'Add Photo',
+      'Choose an option',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Take Photo', onPress: () => handleTakePhoto() },
+        { text: 'Choose from Library', onPress: () => handleChooseFromLibrary() },
+      ]
     );
+  };
+
+  const handleTakePhoto = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Camera Permission',
+            message: 'This app needs access to camera to take photos',
+            buttonPositive: 'OK',
+            buttonNegative: 'Cancel',
+          },
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Permission Denied', 'Camera permission is required to take photos');
+          return;
+        }
+      } catch (err) {
+        console.warn(err);
+        return;
+      }
+    }
+
+    const options: CameraOptions = {
+      mediaType: 'photo',
+      quality: 0.8 as const,
+      maxWidth: 1200,
+      maxHeight: 1200,
+      saveToPhotos: true,
+    };
+
+    try {
+      const result = await launchCamera(options);
+      if (result.assets && result.assets[0]?.uri) {
+        setPhotos([...photos, result.assets[0].uri]);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      Alert.alert('Error', 'Failed to take photo');
+    }
+  };
+
+  const handleChooseFromLibrary = async () => {
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+      quality: 0.8 as const,
+      maxWidth: 1200,
+      maxHeight: 1200,
+      selectionLimit: 1,
+    };
+
+    try {
+      const result = await launchImageLibrary(options);
+      if (result.assets && result.assets[0]?.uri) {
+        setPhotos([...photos, result.assets[0].uri]);
+      }
+    } catch (error) {
+      console.error('Error choosing photo:', error);
+      Alert.alert('Error', 'Failed to choose photo');
+    }
   };
 
   const handleRemovePhoto = (index: number) => {

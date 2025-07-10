@@ -39,6 +39,8 @@
 	<string>This app uses location services to help you track project progress and optimize task management based on your location.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your photo library to allow you to attach images to tasks and projects for better documentation and progress tracking.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to your camera to take photos for your profile picture and to document work progress.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
